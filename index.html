@@ -3,142 +3,38 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Agente de Video | HeyGen</title>
+  <title>ArmonIA Automation | Agente AI</title>
   <style>
-    :root { --bg:#0b0b0b; --fg:#f4f4f5; --muted:#9aa0a6; --btn:#111; --btnfg:#fff; }
-    * { box-sizing: border-box; }
     html, body { height: 100%; margin: 0; }
-    body {
-      font-family: system-ui, Arial, sans-serif; background: var(--bg); color: var(--fg);
-      display: grid; place-items: center; padding: 24px;
-    }
-    .card {
-      width: min(720px, 92vw); background: rgba(255,255,255,.04);
-      border: 1px solid rgba(255,255,255,.08); border-radius: 16px; padding: 32px;
-      box-shadow: 0 20px 60px rgba(0,0,0,.35); text-align: center;
-    }
-    h1 { margin: 0 0 10px; font-weight: 650; letter-spacing: .2px; }
-    p { margin: 0 0 24px; color: var(--muted); }
-    .btn {
-      appearance: none; border: 0; border-radius: 10px;
-      background: var(--btn); color: var(--btnfg);
-      padding: 14px 20px; font-size: 16px; cursor: pointer;
-      box-shadow: 0 12px 30px rgba(0,0,0,.25);
-      transition: transform .06s ease, background .2s ease, opacity .2s ease;
-    }
-    .btn:hover { background: #181818; }
-    .btn:active { transform: translateY(1px); }
-
-    /* Modal */
-    .overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,.38); backdrop-filter: blur(2px);
-      display: none; opacity: 0; transition: opacity .2s ease; z-index: 9998;
-    }
-    .overlay.show { display: block; opacity: 1; }
-    .modal {
-      position: fixed; inset: 0; display: grid; place-items: center; z-index: 9999;
-      opacity: 0; visibility: hidden; transition: opacity .2s ease, transform .2s ease;
-      transform: scale(.98);
-    }
-    .modal.show { opacity: 1; visibility: visible; transform: scale(1); }
-    .modal__content {
-      width: min(960px, 92vw); aspect-ratio: 16 / 9; background: #000;
-      border-radius: 12px; overflow: hidden; position: relative; box-shadow: 0 24px 80px rgba(0,0,0,.5);
-    }
-    .modal__close {
-      position: absolute; top: 8px; right: 8px; z-index: 2;
-      width: 38px; height: 38px; border: 0; border-radius: 10px; cursor: pointer;
-      background: rgba(255,255,255,.12); color: #fff; font-size: 22px; line-height: 38px;
-    }
-    .modal__close:hover { background: rgba(255,255,255,.2); }
-
-    iframe { width: 100%; height: 100%; border: 0; display: block; }
-
-    @media (max-width: 768px) {
-      .card { padding: 24px; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .overlay, .modal { transition: none !important; }
+    body { font-family: system-ui, Arial, sans-serif; background: #0b0b0b; color: #fff; }
+    header { padding: 32px 16px; text-align: center; }
+    header h1 { margin: 0 0 12px; font-size: 1.8rem; font-weight: 700; }
+    header p { margin: 0; font-size: 1.1rem; color: #ddd; }
+    .wrap { height: calc(100% - 120px); display: grid; place-items: center; padding: 16px; }
+    .frame {
+      width: min(960px, 95vw);
+      aspect-ratio: 16 / 9;
+      border: 0;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,.45);
     }
   </style>
 </head>
 <body>
-  <main class="card">
-    <h1>Habla con nuestro agente</h1>
-    <p>Haz clic en el botón para iniciar una conversación en video (micrófono requerido).</p>
-    <button id="open" class="btn" aria-haspopup="dialog" aria-controls="heygen-modal">Iniciar conversación</button>
-  </main>
+  <header>
+    <h1>ArmonIA Automation tiene una solución con AI para tu organización</h1>
+    <p>Habla con nuestro agente.</p>
+  </header>
 
-  <div id="overlay" class="overlay" aria-hidden="true"></div>
-
-  <section id="heygen-modal" class="modal" role="dialog" aria-modal="true" aria-label="Asistente de video" aria-hidden="true">
-    <div class="modal__content">
-      <button id="close" class="modal__close" aria-label="Cerrar">×</button>
-      <!-- El iframe se inyecta aquí después del clic -->
-      <div id="frame-slot" aria-live="polite"></div>
-    </div>
-  </section>
-
-  <script>
-    // 1) Config: tu URL de HeyGen (usa exactamente tu token 'share')
-    const HEYGEN_URL =
-      "https://labs.heygen.com/guest/streaming-embed?share=eyJxdWFsaXR5IjoiaGlnaCIsImF2YXRhck5hbWUiOiI2YmZjMzMzNzdmYWY0YmVhYmQwYzAxNzFmYmQyYzM3NiIsInByZXZpZXdJbWciOiJodHRwczovL2ZpbGVzMi5oZXlnZW4uYWkvYXZhdGFyL3YzLzZiZmMzMzM3N2ZhZjRiZWFiZDBjMDE3MWZiZDJjMzc2L2Z1bGwvMi4yL3ByZXZpZXdfdGFyZ2V0LndlYnAiLCJuZWVkUmVtb3ZlQmFja2dyb3VuZCI6ZmFsc2UsImtub3dsZWRnZUJhc2VJZCI6ImQ1NWIxY2M0NmU0MjQ1OTE5YmI1OTE5ZmNmYjQ4ZjUyIiwidXNlcm5hbWUiOiIxNDUyOGVmOTE1MjM0MzI3YjE5NWYyMjQzNGIzYjQ1OSJ9&inIFrame=1";
-
-    // 2) Elementos
-    const overlay = document.getElementById("overlay");
-    const modal = document.getElementById("heygen-modal");
-    const openBtn = document.getElementById("open");
-    const closeBtn = document.getElementById("close");
-    const slot = document.getElementById("frame-slot");
-
-    let mounted = false; // montamos el iframe tras el primer clic (gesto del usuario)
-    let lastFocus = null;
-
-    function mountIframe() {
-      if (mounted) return;
-      const iframe = document.createElement("iframe");
-      iframe.title = "HeyGen Streaming";
-      iframe.allow = "camera; microphone; autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture; web-share";
-      iframe.referrerPolicy = "strict-origin-when-cross-origin";
-      iframe.src = HEYGEN_URL;
-      slot.innerHTML = ""; // por si recargas modal
-      slot.appendChild(iframe);
-      mounted = true;
-      console.log("[HeyGen] iframe montado");
-    }
-
-    function openModal() {
-      lastFocus = document.activeElement;
-      mountIframe();
-      overlay.classList.add("show");
-      overlay.removeAttribute("aria-hidden");
-      modal.classList.add("show");
-      modal.removeAttribute("aria-hidden");
-      closeBtn.focus();
-    }
-
-    function closeModal() {
-      overlay.classList.remove("show");
-      overlay.setAttribute("aria-hidden", "true");
-      modal.classList.remove("show");
-      modal.setAttribute("aria-hidden", "true");
-      if (lastFocus && typeof lastFocus.focus === "function") lastFocus.focus();
-    }
-
-    openBtn.addEventListener("click", openModal);
-    closeBtn.addEventListener("click", closeModal);
-    overlay.addEventListener("click", closeModal);
-    document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
-
-    // (Opcional) escuchar mensajes del embed
-    window.addEventListener("message", (e) => {
-      // Valida origen exacto
-      if (e.origin !== "https://labs.heygen.com") return;
-      if (e.data && e.data.type === "streaming-embed") {
-        // e.g., {action: "hide"} → cerrar modal
-        if (e.data.action === "hide") closeModal();
-      }
-    });
-  </script>
+  <div class="wrap">
+    <iframe
+      class="frame"
+      title="Agente de Video ArmonIA"
+      allow="camera; microphone; autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture; web-share"
+      referrerpolicy="strict-origin-when-cross-origin"
+      src="https://labs.heygen.com/guest/streaming-embed?share=eyJxdWFsaXR5IjoiaGlnaCIsImF2YXRhck5hbWUiOiI2YmZjMzMzNzdmYWY0YmVhYmQwYzAxNzFmYmQyYzM3NiIsInByZXZpZXdJbWciOiJodHRwczovL2ZpbGVzMi5oZXlnZW4uYWkvYXZhdGFyL3YzLzZiZmMzMzM3N2ZhZjRiZWFiZDBjMDE3MWZiZDJjMzc2L2Z1bGwvMi4yL3ByZXZpZXdfdGFyZ2V0LndlYnAiLCJuZWVkUmVtb3ZlQmFja2dyb3VuZCI6ZmFsc2UsImtub3dsZWRnZUJhc2VJZCI6ImQ1NWIxY2M0NmU0MjQ1OTE5YmI1OTE5ZmNmYjQ4ZjUyIiwidXNlcm5hbWUiOiIxNDUyOGVmOTE1MjM0MzI3YjE5NWYyMjQzNGIzYjQ1OSJ9&inIFrame=1">
+    </iframe>
+  </div>
 </body>
 </html>
